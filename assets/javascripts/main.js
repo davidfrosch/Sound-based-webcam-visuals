@@ -86,11 +86,15 @@ function newVideoProcessor() {
         }
       },
       {
+        // BESCHREIBUNG DER ANIMATION
         wrapper: {
           perspective: dataArray[4] * 2 + "px"
         },
         video: {
-          filter: "contrast(" + dataArray[1] + "%) brightness(" + dataArray[7] / 2 + "%) hue-rotate(" + dataArray[14] + "deg)  saturate(422%)"
+          filter: `contrast(${dataArray[1]}%) 
+          brightness(${dataArray[7] / 2}%) 
+          hue-rotate(${dataArray[14]}deg)  
+          saturate(422%)`
         }
       },
       {
@@ -114,10 +118,10 @@ function newVideoProcessor() {
 
   function applyStyles(styles) {
     for(let wrapperStyleName in styles.wrapper){
-      videoWrapper.styles[wrapperStyleName] = styles.wrapper[wrapperStyleName];
+      videoWrapper.style[wrapperStyleName] = styles.wrapper[wrapperStyleName];
     }
     for(let videoStyleName in styles.video){
-      video.styles[videoStyleName] = styles.video[videoStyleName];
+      video.style[videoStyleName] = styles.video[videoStyleName];
     }
   }
 
@@ -127,14 +131,20 @@ function newVideoProcessor() {
       // Change to event.code for better readability
       case 50:
         loopSpeed = loopSpeed * 2;
+        break;
       case 49:
         loopSpeed = loopSpeed / 2;
+        break;
       case 48:
         currentStyleIndex = Math.min(currentStyleIndex + 1, videoStyles().length - 1);
+        break;
       case 57:
         currentStyleIndex = Math.max(currentStyleIndex - 1, 0);
+        break;
     }
   }
+
+  
 
   return {
     run: run
