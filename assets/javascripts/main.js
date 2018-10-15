@@ -1,9 +1,9 @@
 if (typeof(navigator.mediaDevices) !== 'undefined') {
   console.log('getUserMedia supported.');
-  let analyser = newAnalyzer();
+  let videoProcessor = newVideoProcessor();
   navigator.mediaDevices
     .getUserMedia({ audio: true, video: { width: 1280, height: 720 } })
-    .then(analyser.run)
+    .then(videoProcessor.run)
     .catch(function (err) {
       if(err == 'NotFoundError: Requested device not found'){
         document.write('Sorry, this application only works if your webcam is plugged in and accessible.');
@@ -12,15 +12,16 @@ if (typeof(navigator.mediaDevices) !== 'undefined') {
       }
     });
 } else {
-    document.write('The function "getUserMedia" not supported on your browser!');
+  document.write('The function "getUserMedia" not supported on your browser!');
 }
 
-function newAnalyzer() {
+function newVideoProcessor() {
   let video = document.querySelector('#video');
   let videoWrapper = document.querySelector('#video-wrapper');
   let audioCtx = new AudioContext();
   let analyser = audioCtx.createAnalyser();
   let stream = null;
+  let isStopped = false;
 
   function run(streamArgument){
     stream = streamArgument;
@@ -34,8 +35,8 @@ function newAnalyzer() {
   function initVideo(){
     video.srcObject = stream;
     video.onloadedmetadata = function (e) {
-        video.play();
-        video.muted = true;
+      video.play();
+      video.muted = true;
     };
   }
 
@@ -58,9 +59,9 @@ function newAnalyzer() {
 
   let loopSpeed = 115.385;
   let currentStyleIndex = 0;
+  let bufferLength = analyser.frequencyBinCount;
+  let dataArray = new Uint8Array(bufferLength);
   function videoStyles(){
-    let bufferLength = analyser.frequencyBinCount;
-    let dataArray = new Uint8Array(bufferLength);
     analyser.getByteFrequencyData(dataArray);
     return [
       {
@@ -93,9 +94,7 @@ function newAnalyzer() {
         }
       },
       {
-        wrapper: {
-          perspective: dataArray[4] * 2 + "px"
-        },
+        wrapper: {},
         video: {
           filter: "contrast(" + dataArray[1] + "%) brightness(" + dataArray[14] / 2 + "%) hue-rotate(" + dataArray[6] + "deg)  saturate(422%)",
           transform: "scale(" + dataArray[10] / 300 + ")"
@@ -108,15 +107,17 @@ function newAnalyzer() {
     allStyles = videoStyles();
     currentStyles = allStyles[currentStyleIndex];
     applyStyles(currentStyles);
-    setTimeout(stylingLoop, loopSpeed);
+    if(!isStopped){
+      setTimeout(stylingLoop, loopSpeed);
+    }
   }
 
   function applyStyles(styles) {
     for(let wrapperStyleName in styles.wrapper){
-      videoWrapper[wrapperStyleName] = styles.wrapper[wrapperStyleName];
+      videoWrapper.styles[wrapperStyleName] = styles.wrapper[wrapperStyleName];
     }
     for(let videoStyleName in styles.video){
-      videos[videoStyleName] = styles.video[videoStyleName];
+      video.styles[videoStyleName] = styles.video[videoStyleName];
     }
   }
 
@@ -131,7 +132,7 @@ function newAnalyzer() {
       case 48:
         currentStyleIndex = Math.min(currentStyleIndex + 1, videoStyles().length - 1);
       case 57:
-        currentStyleIndex = Math.max(currentStyleIndex - 1, 0)
+        currentStyleIndex = Math.max(currentStyleIndex - 1, 0);
     }
   }
 
