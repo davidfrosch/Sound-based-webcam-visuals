@@ -1,0 +1,14 @@
+input {
+  height: 100%;
+}
+
+body {
+  background-color: black;
+  margin: 0;
+}
+
+#video {
+  filter: brightness(77%) hue-rotate(102deg) contrast(200%) saturate(422%);
+  width: 100%;
+
+}
